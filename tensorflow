@@ -1,0 +1,42 @@
+import tensorflow as tf
+import numpy as np
+
+# -------------------------
+# 1. Create training data
+# -------------------------
+
+# Example: [rooms, size]
+X = np.array([
+    [1, 500],
+    [2, 800],
+    [3, 1000],
+    [4, 1200],
+    [5, 1500]
+], dtype=float)
+
+# Target prices
+y = np.array([50, 80, 100, 120, 150], dtype=float)  # in lakhs
+
+# -------------------------
+# 2. Build a simple model
+# -------------------------
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(8, activation='relu', input_shape=(2,)),
+    tf.keras.layers.Dense(4, activation='relu'),
+    tf.keras.layers.Dense(1)   # output price
+])
+
+model.compile(optimizer='adam', loss='mse')
+
+# -------------------------
+# 3. Train the model
+# -------------------------
+model.fit(X, y, epochs=300, verbose=0)
+
+# -------------------------
+# 4. Make predictions
+# -------------------------
+test_house = np.array([[3, 1100]])  # 3 rooms, 1100 sqft
+predicted_price = model.predict(test_house)
+
+print("Predicted Price (lakhs):", predicted_price[0][0])
