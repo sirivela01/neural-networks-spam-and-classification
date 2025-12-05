@@ -1,56 +1,58 @@
 import tensorflow as tf
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.utils import to_categorical
-
-# -----------------------------------------
-# 1. LOAD MNIST DATASET
-# -----------------------------------------
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
-
-# normalize pixel values (0–255 → 0–1)
-X_train = X_train / 255.0
-X_test = X_test / 255.0
-
-# one-hot encode labels
-y_train = to_categorical(y_train, 10)
-y_test = to_categorical(y_test, 10)
-
-# -----------------------------------------
-# 2. BUILD THE NEURAL NETWORK
-# -----------------------------------------
-model = Sequential([
-    Flatten(input_shape=(28, 28)),   # convert 28x28 → 784
-    Dense(128, activation='relu'),   # hidden layer
-    Dense(10, activation='softmax')  # 10 digits output layer
-])
-
-# compile model
-model.compile(optimizer='adam',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-
-# -----------------------------------------
-# 3. TRAIN THE MODEL
-# -----------------------------------------
-model.fit(X_train, y_train, epochs=5, batch_size=32, verbose=1)
-
-# -----------------------------------------
-# 4. EVALUATE MODEL
-# -----------------------------------------
-loss, accuracy = model.evaluate(X_test, y_test)
-print("Test Accuracy:", accuracy)
-
-# -----------------------------------------
-# 5. PREDICT A DIGIT
-# -----------------------------------------
+from tensorflow.keras import layers, models
+import matplotlib.pyplot as plt
+import cv2
 import numpy as np
 
-index = 0   # choosing first test image
-input_img = X_test[index].reshape(1, 28, 28)
+# 1. Load the MNIST dataset
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
-prediction = model.predict(input_img)
-digit = np.argmax(prediction)
+# 2. Normalize
+x_train = x_train / 255.0
+x_test = x_test / 255.0
 
-print("Predicted Digit:", digit)
+# 3. Build the model
+model = models.Sequential([
+    layers.Flatten(input_shape=(28, 28)),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(10, activation='softmax')
+])
+
+# 4. Compile
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+# 5. Train
+model.fit(x_train, y_train, epochs=5)
+
+# 6. Evaluate
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print("Test Accuracy:", test_acc)
+
+# ---------- USER INPUT PART ----------
+# User gives the image path
+img_path = input("Enter the image path (example: digit.png): ")
+
+# Load the image
+img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+# Resize to 28x28
+img = cv2.resize(img, (28, 28))
+
+# Normalize
+img = img / 255.0
+
+# Convert to array shape (1, 28, 28)
+img = np.array(img).reshape(1, 28, 28)
+
+# Predict
+prediction = model.predict(img)
+predicted_digit = prediction.argmax()
+
+print("Predicted Digit =", predicted_digit)
+
+# Show the image
+plt.imshow(img.reshape(28, 28), cmap='gray')
+plt.title("Predicted Digit = " + str(predicted_digit))
+plt.show()
