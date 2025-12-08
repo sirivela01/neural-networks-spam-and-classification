@@ -1,0 +1,66 @@
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load MNIST dataset
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)
+
+# Build CNN model
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(28,28,1)),
+    tf.keras.layers.MaxPooling2D((2,2)),
+    tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2,2)),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(10, activation='softmax')
+])
+
+# Compile and train
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+model.fit(x_train, y_train, epochs=3, validation_data=(x_test, y_test))
+
+# -----------------------------
+# TWO DIGIT PREDICTION
+# -----------------------------
+two_digit = input("Enter a 2-digit number (10–99): ")
+
+digit1 = int(two_digit[0])
+digit2 = int(two_digit[1])
+
+# Pick random images of each digit
+indices1 = np.where(y_test == digit1)[0]
+random_index1 = np.random.choice(indices1)
+img1 = x_test[random_index1]
+
+indices2 = np.where(y_test == digit2)[0]
+random_index2 = np.random.choice(indices2)
+img2 = x_test[random_index2]
+
+# Predict each digit
+pred1 = np.argmax(model.predict(img1.reshape(1,28,28,1)))
+pred2 = np.argmax(model.predict(img2.reshape(1,28,28,1)))
+
+# Show both digits
+plt.figure(figsize=(6,3))
+
+plt.subplot(1,2,1)
+plt.imshow(img1.reshape(28,28), cmap="gray")
+plt.title(f"{digit1} → Predicted {pred1}")
+plt.axis("off")
+
+plt.subplot(1,2,2)
+plt.imshow(img2.reshape(28,28), cmap="gray")
+plt.title(f"{digit2} → Predicted {pred2}")
+plt.axis("off")
+
+plt.show()
+
+print("Actual number:", two_digit)
+print("Predicted number:", str(pred1) + str(pred2))
