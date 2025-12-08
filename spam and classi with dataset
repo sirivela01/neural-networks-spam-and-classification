@@ -1,0 +1,67 @@
+import numpy as np
+
+# -------------------------
+# Dataset (XOR problem)
+# -------------------------
+X = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+
+y = np.array([0, 1, 1, 0])   # labels
+
+
+# -------------------------
+# Neural Network Functions
+# -------------------------
+def relu(x):
+    return np.maximum(0, x)
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+# -------------------------
+# Feedforward Network
+# -------------------------
+def feedforward(x):
+    # Hidden layer weights
+    W1 = np.array([[0.5, -0.3],
+                   [0.8, 0.2]])
+    b1 = np.array([0.1, -0.2])
+
+    # Output layer weights
+    W2 = np.array([[0.4],
+                   [-0.7]])
+    b2 = np.array([0.0])
+
+    # Hidden layer
+    z1 = np.dot(x, W1) + b1
+    h = relu(z1)
+
+    # Output layer
+    z2 = np.dot(h, W2) + b2
+    out = sigmoid(z2)
+
+    return h, out
+
+
+# -------------------------
+# Run feedforward on dataset
+# -------------------------
+print("=== FEEDFORWARD ON DATASET ===")
+for i in range(len(X)):
+    h, out = feedforward(X[i])
+    print(f"Input: {X[i]}, Hidden: {h}, Output: {out[0]:.4f}")
+
+
+# -------------------------
+# Classification
+# -------------------------
+print("\n=== CLASSIFICATION RESULTS ===")
+for i in range(len(X)):
+    _, out = feedforward(X[i])
+    pred = 1 if out > 0.5 else 0
+    print(f"Input: {X[i]}, Predicted: {pred}, Actual: {y[i]}")
