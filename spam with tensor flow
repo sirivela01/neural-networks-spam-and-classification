@@ -1,0 +1,45 @@
+import tensorflow as tf
+import numpy as np
+
+# -------------------------
+# Dummy Dataset (Spam Example)
+# -------------------------
+# Features could be numeric representations of messages
+# For demonstration, we use simple 2D inputs
+X = np.array([
+    [0, 0],  # Not spam
+    [0, 1],  # Spam
+    [1, 0],  # Spam
+    [1, 1]   # Not spam
+], dtype=np.float32)
+
+y = np.array([0, 1, 1, 0], dtype=np.float32)  # Labels: 0=Not spam, 1=Spam
+
+# -------------------------
+# Build Neural Network
+# -------------------------
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(4, input_dim=2, activation='relu'),  # Hidden layer
+    tf.keras.layers.Dense(1, activation='sigmoid')            # Output layer
+])
+
+# -------------------------
+# Compile Model
+# -------------------------
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+# -------------------------
+# Train Model
+# -------------------------
+model.fit(X, y, epochs=500, verbose=0)
+
+# -------------------------
+# Predictions
+# -------------------------
+print("\n=== CLASSIFICATION RESULTS ===")
+predictions = model.predict(X)
+for i in range(len(X)):
+    pred_class = 1 if predictions[i] > 0.5 else 0
+    print(f"Input: {X[i]}, Predicted: {pred_class}, Actual: {y[i]}")
