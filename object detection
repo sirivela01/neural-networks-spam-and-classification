@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 
 # ---------------------------------------------------------
-# Load the pre-trained SSD MobileNetV2 model from TF-Hub
+# Load the pre-trained SSD MobileNetV2 model from TF-Hub(Single Shot Detector)
 # ---------------------------------------------------------
 print("Loading model from TensorFlow Hub...")
 model = hub.load("https://tfhub.dev/tensorflow/ssd_mobilenet_v2/2")
