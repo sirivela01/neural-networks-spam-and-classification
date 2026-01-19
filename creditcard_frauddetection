@@ -1,0 +1,128 @@
+# =====================================
+# Credit Card Fraud Detection (VS Code)
+# =====================================
+
+import zipfile
+import os
+import pandas as pd
+import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    log_loss,
+    classification_report
+)
+
+print("\nProgram started...\n")
+
+
+# ---------- ZIP Extraction ----------
+ZIP_FILE = r"C:\Users\syash\OneDrive\Desktop\python\creditcard.csv.zip"
+
+if not os.path.exists("creditcard.csv"):
+    print("Extracting ZIP file...")
+    with zipfile.ZipFile(ZIP_FILE, 'r') as z:
+        z.extractall()
+else:
+    print("CSV already exists")
+
+print("Files:", os.listdir())
+
+
+# ---------- Load Dataset ----------
+data = pd.read_csv("creditcard.csv")
+print("\nDataset Loaded")
+print(data.head())
+
+
+# ---------- Prepare Data ----------
+X = data.drop("Class", axis=1)
+y = data["Class"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+# ---------- Train Model ----------
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+print("\nModel trained successfully")
+
+
+# ---------- Threshold Prediction ----------
+threshold = 0.3
+y_test_prob = model.predict_proba(X_test)[:, 1]
+y_test_pred = (y_test_prob >= threshold).astype(int)
+
+# ---------- Threshold Prediction ----------
+threshold = 0.6
+y_test_prob = model.predict_proba(X_test)[:, 1]
+y_test_pred = (y_test_prob >= threshold).astype(int)
+
+# ---------- Threshold Prediction ----------
+threshold = 0.9
+y_test_prob = model.predict_proba(X_test)[:, 1]
+y_test_pred = (y_test_prob >= threshold).astype(int)
+
+print(f"\nThreshold used: {threshold}")
+print("Frauds detected:", np.sum(y_test_pred))
+print("Actual frauds:", np.sum(y_test))
+
+
+# ---------- Confusion Matrix ----------
+cm = confusion_matrix(y_test, y_test_pred)
+print("\nConfusion Matrix:\n", cm)
+
+disp = ConfusionMatrixDisplay(
+    confusion_matrix=cm,
+    display_labels=["Normal", "Fraud"]
+)
+
+disp.plot()
+plt.title("Confusion Matrix")
+plt.show(block=True)
+
+
+# ---------- Classification Report ----------
+print("\nClassification Report:")
+print(classification_report(y_test, y_test_pred))
+
+
+# ---------- Loss Curve ----------
+train_loss = []
+test_loss = []
+
+for i in range(1, 50):
+    temp_model = LogisticRegression(max_iter=i, warm_start=True)
+    temp_model.fit(X_train, y_train)
+
+    train_prob = temp_model.predict_proba(X_train)[:, 1]
+    test_prob = temp_model.predict_proba(X_test)[:, 1]
+
+    train_loss.append(log_loss(y_train, train_prob))
+    test_loss.append(log_loss(y_test, test_prob))
+
+
+plt.figure()
+plt.plot(train_loss, label="Training Loss")
+plt.plot(test_loss, label="Validation Loss")
+plt.xlabel("Iterations")
+plt.ylabel("Log Loss")
+plt.title("Loss Curve")
+plt.legend()
+plt.show(block=True)
+
+
+input("\nPress ENTER to exit...")
